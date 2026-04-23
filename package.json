@@ -1,0 +1,16 @@
+{
+  "name": "douyin-tracker",
+  "version": "1.0.0",
+  "description": "抖音推荐关注清单 - 评价追踪",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1"
+  }
+}
