@@ -1,10 +1,11 @@
 import { Redis } from '@upstash/redis';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const redis = process.env.UPSTASH_REDIS_REST_URL 
+  ? new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
+  : null;
 
 const ACCOUNTS = [
   { id: 1, name: "追风少年", category: "搞笑/生活", desc: "搞笑段子手", fans: "100.0w", date: "账号已重置" },
@@ -39,61 +40,55 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-
-  const url = new URL(req.url, 'https://' + req.headers.host);
+  
+  const url = new URL(req.url, 'http://' + req.headers.host);
   const pathname = url.pathname;
-
+  
   try {
-    // API: 获取账号列表 + 评价
-    if (pathname === '/api/accounts' && req.method === 'GET') {
-      const ratings = {};
-      if (process.env.UPSTASH_REDIS_REST_URL) {
-        const redis = new Redis({
-          url: process.env.UPSTASH_REDIS_REST_URL,
-          token: process.env.UPSTASH_REDIS_REST_TOKEN
-        });
-        for (const acc of ACCOUNTS) {
-          try {
-            const val = await redis.get('rating:' + acc.id);
-            ratings[acc.id] = val || '';
-          } catch (e) {
-            ratings[acc.id] = '';
-          }
+    // GET /api/accounts - 返回账号列表
+    if (req.method === 'GET' && pathname === '/api/accounts') {
+      let ratings = {};
+      if (redis) {
+        try {
+          ratings = await redis.hgetall('ratings') || {};
+        } catch (e) {
+          console.error('Redis error:', e.message);
         }
       }
-      return res.status(200).json({ accounts: ACCOUNTS, ratings });
+      
+      const accountsWithRatings = ACCOUNTS.map(acc => ({
+        ...acc,
+        rating: ratings[acc.id] || null
+      }));
+      
+      return res.status(200).json(accountsWithRatings);
     }
-
-    // API: 保存评价
-    if (pathname === '/api/rate' && req.method === 'POST') {
-      let body = '';
-      for await (const chunk of req) body += chunk;
-      const { id, rating } = JSON.parse(body);
-      if (!id || !rating) {
-        return res.status(400).json({ error: 'Missing id or rating' });
+    
+    // POST /api/rate - 保存评价
+    if (req.method === 'POST' && pathname === '/api/rate') {
+      const body = JSON.parse(req.body || '{}');
+      const { accountId, rating } = body;
+      
+      if (!accountId || !rating) {
+        return res.status(400).json({ error: 'Missing accountId or rating' });
       }
-      if (process.env.UPSTASH_REDIS_REST_URL) {
-        const redis = new Redis({
-          url: process.env.UPSTASH_REDIS_REST_URL,
-          token: process.env.UPSTASH_REDIS_REST_TOKEN
-        });
-        await redis.set('rating:' + id, rating);
+      
+      if (redis) {
+        try {
+          await redis.hset('ratings', { [accountId]: rating });
+        } catch (e) {
+          console.error('Redis error:', e.message);
+        }
       }
-      return res.status(200).json({ success: true });
+      
+      return res.status(200).json({ success: true, accountId, rating });
     }
-
-    // 首页: 返回 HTML
-    if ((pathname === '/' || pathname === '') && req.method === 'GET') {
-      const htmlPath = path.join(process.cwd(), 'index.html');
-      const html = fs.readFileSync(htmlPath, 'utf8');
-      res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      return res.status(200).send(html);
-    }
-
-    return res.status(404).json({ error: 'Not found', path: pathname });
-
-  } catch (e) {
-    console.error('Handler error:', e);
-    return res.status(500).json({ error: e.message });
+    
+    // 默认：返回首页提示
+    return res.status(200).send('Douyin Tracker API. Use /api/accounts or /api/rate');
+    
+  } catch (error) {
+    console.error('Handler error:', error);
+    return res.status(500).json({ error: error.message });
   }
 }
