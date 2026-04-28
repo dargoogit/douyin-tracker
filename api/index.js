@@ -1,4 +1,4 @@
-// 最小化版本：不依赖 Redis，直接返回硬编码数据
+// 最小化版：跳过 Redis，内存存储，冷启动零延迟
 const ACCOUNTS = [
   { id: 1, name: "追风少年", category: "搞笑/生活", desc: "搞笑段子手", fans: "100.0w", status: "账号已重置" },
   { id: 2, name: "梅尼耶", category: "美食/网红", desc: "鼓上舞创始人", fans: "2600w", status: "-" },
@@ -23,7 +23,7 @@ const ACCOUNTS = [
   { id: 21, name: "司氏砸缸", category: "知识/旅行", desc: "旅行探险", fans: "200.0w", status: "-" }
 ];
 
-// ratings 存在内存里（Vercel serverless 每次调用冷启动，不用 Redis）
+// 内存存储（Vercel serverless 冷启动时清零，不持久化）
 const ratings = {};
 
 export default async function handler(req, res) {
@@ -32,15 +32,13 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Cache-Control', 'no-store');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
 
   const url = new URL(req.url, 'http://' + req.headers.host);
 
   if (req.method === 'GET' && url.pathname === '/api/accounts') {
     return res.status(200).json({
-      source: 'serverless',
+      source: 'serverless-no-redis',
       timestamp: new Date().toISOString(),
       accounts: ACCOUNTS.map(a => ({ ...a, rating: ratings[a.id] || null }))
     });
@@ -48,17 +46,12 @@ export default async function handler(req, res) {
 
   if (req.method === 'POST' && url.pathname === '/api/rate') {
     let body = {};
-    try {
-      if (req.body) body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    } catch(e) {}
+    try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {}; } catch(e) {}
     const { accountId, rating } = body;
-    if (!accountId || !rating) {
-      return res.status(400).json({ error: '缺少参数 accountId 或 rating' });
-    }
+    if (!accountId || !rating) return res.status(400).json({ error: '缺少参数' });
     ratings[accountId] = rating;
-    return res.status(200).json({ success: true, accountId, rating, note: '数据保存在内存（重启后会重置）' });
+    return res.status(200).json({ success: true, accountId, rating, note: '内存存储（重启后丢失）' });
   }
 
-  // 所有其他路径 → 静态文件由 Vercel 处理
-  return res.status(404).json({ error: '未知端点', path: url.pathname });
+  return res.status(404).json({ error: '未知端点: ' + url.pathname });
 }
