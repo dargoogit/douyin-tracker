@@ -1,10 +1,7 @@
 import { Redis } from '@upstash/redis';
 
-const redis = process.env.UPSTASH_REDIS_REST_URL 
-  ? new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN,
-    })
+const redis = process.env.UPSTASH_REDIS_REST_URL
+  ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
   : null;
 
 const ACCOUNTS = [
@@ -42,9 +39,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET' && url.pathname === '/api/accounts') {
       let ratings = {};
       if (redis) { try { ratings = await redis.hgetall('ratings') || {}; } catch(e) {} }
-      return res.status(200).json(ACCOUNTS.map(a => ({
-        ...a, rating: ratings[a.id] || null
-      })));
+      return res.status(200).json(ACCOUNTS.map(a => ({ ...a, rating: ratings[a.id] || null })));
     }
     if (req.method === 'POST' && url.pathname === '/api/rate') {
       const { accountId, rating } = JSON.parse(req.body || '{}');
