@@ -1,4 +1,10 @@
-const { Redis } = require('@upstash/redis');
+import { Redis } from '@upstash/redis';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const ACCOUNTS = [
   { id: 1, name: "追风少年", category: "搞笑/生活", desc: "搞笑段子手", fans: "100.0w", date: "账号已重置" },
@@ -24,7 +30,7 @@ const ACCOUNTS = [
   { id: 21, name: "司氏砸缸", category: "知识/旅行", desc: "旅行探险", fans: "200.0w", date: "2024-04-27" }
 ];
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -78,8 +84,6 @@ module.exports = async (req, res) => {
 
     // 首页: 返回 HTML
     if ((pathname === '/' || pathname === '') && req.method === 'GET') {
-      const fs = require('fs');
-      const path = require('path');
       const htmlPath = path.join(process.cwd(), 'index.html');
       const html = fs.readFileSync(htmlPath, 'utf8');
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -92,4 +96,4 @@ module.exports = async (req, res) => {
     console.error('Handler error:', e);
     return res.status(500).json({ error: e.message });
   }
-};
+}
