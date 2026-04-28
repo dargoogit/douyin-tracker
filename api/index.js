@@ -1,15 +1,5 @@
 const { Redis } = require('@upstash/redis');
 
-let redis;
-try {
-  redis = new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN
-  });
-} catch (e) {
-  console.error('Redis init error:', e.message);
-}
-
 const ACCOUNTS = [
   { id: 1, name: "追风少年", category: "搞笑/生活", desc: "搞笑段子手", fans: "100.0w", date: "账号已重置" },
   { id: 2, name: "梅尼耶", category: "美食/网红", desc: "鼓上舞创始人", fans: "2600w", date: "2024-04-27" },
@@ -34,7 +24,8 @@ const ACCOUNTS = [
   { id: 21, name: "司氏砸缸", category: "知识/旅行", desc: "旅行探险", fans: "200.0w", date: "2024-04-27" }
 ];
 
-export default async function handler(req, res) {
+module.exports = async (req, res) => {
+  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -50,12 +41,18 @@ export default async function handler(req, res) {
     // API: 获取账号列表 + 评价
     if (pathname === '/api/accounts' && req.method === 'GET') {
       const ratings = {};
-      for (const acc of ACCOUNTS) {
-        try {
-          const val = await redis.get('rating:' + acc.id);
-          ratings[acc.id] = val || '';
-        } catch (e) {
-          ratings[acc.id] = '';
+      if (process.env.UPSTASH_REDIS_REST_URL) {
+        const redis = new Redis({
+          url: process.env.UPSTASH_REDIS_REST_URL,
+          token: process.env.UPSTASH_REDIS_REST_TOKEN
+        });
+        for (const acc of ACCOUNTS) {
+          try {
+            const val = await redis.get('rating:' + acc.id);
+            ratings[acc.id] = val || '';
+          } catch (e) {
+            ratings[acc.id] = '';
+          }
         }
       }
       return res.status(200).json({ accounts: ACCOUNTS, ratings });
@@ -69,12 +66,18 @@ export default async function handler(req, res) {
       if (!id || !rating) {
         return res.status(400).json({ error: 'Missing id or rating' });
       }
-      await redis.set('rating:' + id, rating);
+      if (process.env.UPSTASH_REDIS_REST_URL) {
+        const redis = new Redis({
+          url: process.env.UPSTASH_REDIS_REST_URL,
+          token: process.env.UPSTASH_REDIS_REST_TOKEN
+        });
+        await redis.set('rating:' + id, rating);
+      }
       return res.status(200).json({ success: true });
     }
 
     // 首页: 返回 HTML
-    if (pathname === '/' && req.method === 'GET') {
+    if ((pathname === '/' || pathname === '') && req.method === 'GET') {
       const fs = require('fs');
       const path = require('path');
       const htmlPath = path.join(process.cwd(), 'index.html');
@@ -89,4 +92,4 @@ export default async function handler(req, res) {
     console.error('Handler error:', e);
     return res.status(500).json({ error: e.message });
   }
-}
+};
