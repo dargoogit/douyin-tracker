@@ -32,7 +32,6 @@ const ACCOUNTS = [
 ];
 
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -45,50 +44,31 @@ export default async function handler(req, res) {
   const pathname = url.pathname;
   
   try {
-    // GET /api/accounts - 返回账号列表
     if (req.method === 'GET' && pathname === '/api/accounts') {
       let ratings = {};
       if (redis) {
-        try {
-          ratings = await redis.hgetall('ratings') || {};
-        } catch (e) {
-          console.error('Redis error:', e.message);
-        }
+        try { ratings = await redis.hgetall('ratings') || {}; } catch (e) {}
       }
-      
-      const accountsWithRatings = ACCOUNTS.map(acc => ({
+      return res.status(200).json(ACCOUNTS.map(acc => ({
         ...acc,
         rating: ratings[acc.id] || null
-      }));
-      
-      return res.status(200).json(accountsWithRatings);
+      })));
     }
     
-    // POST /api/rate - 保存评价
     if (req.method === 'POST' && pathname === '/api/rate') {
       const body = JSON.parse(req.body || '{}');
       const { accountId, rating } = body;
-      
       if (!accountId || !rating) {
         return res.status(400).json({ error: 'Missing accountId or rating' });
       }
-      
       if (redis) {
-        try {
-          await redis.hset('ratings', { [accountId]: rating });
-        } catch (e) {
-          console.error('Redis error:', e.message);
-        }
+        try { await redis.hset('ratings', { [accountId]: rating }); } catch (e) {}
       }
-      
       return res.status(200).json({ success: true, accountId, rating });
     }
     
-    // 默认：返回首页提示
-    return res.status(200).send('Douyin Tracker API. Use /api/accounts or /api/rate');
-    
+    return res.status(200).send('Douyin Tracker API');
   } catch (error) {
-    console.error('Handler error:', error);
     return res.status(500).json({ error: error.message });
   }
 }
