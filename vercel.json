@@ -1,5 +1,5 @@
 {
-  "public": true,
+  "framework": null,
   "rewrites": [
     {
       "source": "/api/accounts",
@@ -8,12 +8,6 @@
     {
       "source": "/api/rate",
       "destination": "/api/index"
-    },
-    {
-      "source": "/api",
-      "destination": "/api/index"
     }
-  ],
-  "cleanUrls": true,
-  "trailingSlash": false
+  ]
 }
