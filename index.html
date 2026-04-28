@@ -3,196 +3,133 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎯 抖音推荐关注清单</title>
+<title>抖音推荐关注清单</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #e8e8e8; min-height: 100vh; padding: 20px; }
-.container { max-width: 1100px; margin: 0 auto; }
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #2a2a2a; flex-wrap: wrap; gap: 12px; }
-header h1 { font-size: 20px; font-weight: 700; }
-h1 span { color: #fe2c55; }
-.stats { font-size: 13px; color: #888; background: #1a1a1a; padding: 6px 14px; border-radius: 20px; border: 1px solid #2a2a2a; }
-.stats strong { color: #fe2c55; }
-.filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-.filter-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid #2a2a2a; background: #1a1a1a; color: #888; font-size: 13px; cursor: pointer; transition: all 0.2s; }
-.filter-btn:hover { border-color: #fe2c55; color: #fe2c55; }
-.filter-btn.active { background: #fe2c55; color: #fff; border-color: #fe2c55; }
-table { width: 100%; border-collapse: collapse; background: #161616; border-radius: 12px; overflow: hidden; border: 1px solid #2a2a2a; }
-thead tr { background: #1e1e1e; }
-th { padding: 12px 16px; text-align: left; font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-th:first-child { padding-left: 20px; }
-th:last-child { text-align: center; }
-tbody tr { border-bottom: 1px solid #222; transition: background 0.15s; }
-tbody tr:last-child { border-bottom: none; }
-tbody tr:hover { background: #1c1c1c; }
-td { padding: 13px 16px; font-size: 14px; vertical-align: middle; }
-td:first-child { padding-left: 20px; }
-td.num { color: #444; font-size: 12px; width: 40px; }
-td.name { font-weight: 600; color: #fff; white-space: nowrap; }
-td.cat span { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
-td.desc { color: #777; font-size: 13px; max-width: 200px; }
-td.fans { color: #fe2c55; font-weight: 600; white-space: nowrap; font-size: 13px; }
-td.link a { color: #4a9eff; text-decoration: none; font-size: 13px; }
-td.link a:hover { text-decoration: underline; }
-td.rating { text-align: center; }
-.rating-group { display: inline-flex; gap: 4px; background: #111; padding: 4px; border-radius: 10px; border: 1px solid #2a2a2a; }
-.rating-btn { padding: 6px 10px; border-radius: 6px; border: none; font-size: 13px; cursor: pointer; transition: all 0.15s; background: transparent; color: #555; white-space: nowrap; }
-.rating-btn:hover { background: #222; color: #ccc; }
-.rating-btn.active-yes { background: #22c55e !important; color: #fff !important; }
-.rating-btn.active-meh { background: #eab308 !important; color: #1a1a1a !important; }
-.rating-btn.active-no { background: #ef4444 !important; color: #fff !important; }
-tr.marked-yes { background: rgba(34,197,94,0.06); }
-tr.marked-meh { background: rgba(234,179,8,0.06); }
-tr.marked-no { background: rgba(239,68,68,0.06); }
-.footer-bar { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #444; flex-wrap: wrap; gap: 8px; }
-.footer-bar a { color: #fe2c55; text-decoration: none; }
-.footer-bar a:hover { text-decoration: underline; }
-.loading { text-align: center; padding: 60px; color: #555; font-size: 15px; }
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #22c55e; color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; }
-.toast.show { opacity: 1; }
-@media (max-width: 768px) {
-  body { padding: 12px; }
-  td.desc, th:nth-child(4) { display: none; }
-  td.link { display: none; }
-  td.rating { width: 160px; }
-  .rating-btn { padding: 5px 7px; font-size: 12px; }
-}
+body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #121212; color: #e0e0e0; min-height: 100vh; }
+header { background: #1a1a2e; padding: 24px; text-align: center; border-bottom: 1px solid #333; }
+header h1 { font-size: 1.5rem; color: #fff; }
+header p { font-size: 0.85rem; color: #888; margin-top: 6px; }
+.filter-bar { display: flex; gap: 8px; padding: 16px 24px; flex-wrap: wrap; align-items: center; background: #1a1a2e; border-bottom: 1px solid #2a2a3a; }
+.filter-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid #444; background: transparent; color: #aaa; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
+.filter-btn:hover, .filter-btn.active { background: #ff4757; border-color: #ff4757; color: #fff; }
+.container { max-width: 900px; margin: 0 auto; padding: 16px 24px; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 10px 12px; font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #2a2a3a; }
+td { padding: 12px; border-bottom: 1px solid #1e1e2e; vertical-align: middle; }
+tr:hover td { background: #1a1a2e; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; background: #2a2a3a; color: #888; }
+.rating-group { display: flex; gap: 4px; }
+.rate-btn { padding: 5px 10px; border: 1px solid #333; border-radius: 6px; background: transparent; color: #888; cursor: pointer; font-size: 0.75rem; transition: all 0.15s; }
+.rate-btn:hover { border-color: #666; color: #ccc; transform: scale(1.05); }
+.rate-btn.active-follow { background: #2ed573; border-color: #2ed573; color: #fff; }
+.rate-btn.active-ok { background: #ffa502; border-color: #ffa502; color: #fff; }
+.rate-btn.active-skip { background: #ff4757; border-color: #ff4757; color: #fff; }
+.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
+.status-ok { background: #2ed573; }
+.status-bad { background: #ff4757; }
+.status-unknown { background: #555; }
+#toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px; font-size: 0.9rem; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; z-index: 999; }
+#toast.show { opacity: 1; transform: translateY(0); }
+#toast.ok { background: #2ed573; color: #fff; }
+#toast.err { background: #ff4757; color: #fff; }
+#status { font-size: 0.8rem; color: #555; padding: 8px 24px; }
 </style>
 </head>
 <body>
+<header>
+  <h1>🎵 抖音推荐关注清单</h1>
+  <p>追踪 21 个优质博主 · 3级评价</p>
+</header>
+<div class="filter-bar">
+  <button class="filter-btn active" data-filter="all">全部</button>
+  <button class="filter-btn" data-filter="follow">✅ 关注</button>
+  <button class="filter-btn" data-filter="ok">🟡 观望</button>
+  <button class="filter-btn" data-filter="skip">❌ 跳过</button>
+  <button class="filter-btn" data-filter="none">⭕ 待定</button>
+</div>
+<div id="status">加载中...</div>
 <div class="container">
-  <header>
-    <h1>🎯 <span>抖音</span>推荐关注清单</h1>
-    <div class="stats" id="stats">加载中...</div>
-  </header>
-  <div class="filter-bar">
-    <button class="filter-btn active" data-filter="all">全部</button>
-    <button class="filter-btn" data-filter="yes">✅ 必关注</button>
-    <button class="filter-btn" data-filter="meh">🟡 还行</button>
-    <button class="filter-btn" data-filter="no">❌ 不感兴趣</button>
-    <button class="filter-btn" data-filter="none">⭕ 待评价</button>
-  </div>
-  <div id="loading" class="loading">加载数据中...</div>
-  <table id="mainTable" style="display:none">
-    <thead><tr><th>#</th><th>账号</th><th>分类</th><th>定位</th><th>粉丝</th><th>链接</th><th>评价</th></tr></thead>
+  <table>
+    <thead><tr><th>账号</th><th>类别</th><th>粉丝</th><th>状态</th><th>评价</th></tr></thead>
     <tbody id="tbody"></tbody>
   </table>
-  <div class="footer-bar">
-    <span>💾 数据保存在服务器 · 随时随地访问</span>
-    <a href="javascript:void(0)" onclick="clearAll()">清除所有评价</a>
-  </div>
 </div>
-<div id="toast" class="toast"></div>
-
+<div id="toast"></div>
 <script>
-const catColors = {
-  '搞笑':'#e879f9','剧情':'#a78bfa','影视':'#818cf8','技能':'#60a5fa',
-  '科技':'#38bdf8','知识':'#34d399','财经':'#fbbf24','美食':'#fb923c','创意':'#f87171'
-};
+const API = ''; // 相对路径，同域
+
+async function fetchAccounts() {
+  const r = await fetch(API + '/api/accounts');
+  if (!r.ok) throw new Error('API错误 ' + r.status);
+  return r.json();
+}
+
+async function rate(id, value) {
+  const r = await fetch(API + '/api/rate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accountId: id, rating: value })
+  });
+  if (!r.ok) throw new Error('提交失败');
+  return r.json();
+}
+
+function toast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'show ' + type;
+  setTimeout(() => t.className = '', 2500);
+}
 
 let accounts = [];
-let ratings = {};
 let currentFilter = 'all';
 
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1500);
-}
-
-async function setRating(id, val) {
-  if (ratings[String(id)] === val) {
-    delete ratings[String(id)];
-  } else {
-    ratings[String(id)] = val;
-  }
-  try {
-    await fetch('/api/ratings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, value: ratings[String(id)] || null })
-    });
-  } catch(e) { console.error(e); }
-  render();
-  toast(val === 'yes' ? '✅ 已标记为必关注' : val === 'meh' ? '🟡 已标记为还行' : val === 'no' ? '❌ 已跳过' : '⭕ 已取消标记');
-}
-
 function render() {
-  const tbody = document.getElementById('tbody');
-  const filtered = accounts.filter(a => {
-    if (currentFilter === 'all') return true;
-    if (currentFilter === 'none') return !ratings[String(a.id)];
-    return ratings[String(a.id)] === currentFilter;
-  });
-
-  tbody.innerHTML = filtered.map(a => {
-    const r = ratings[String(a.id)] || '';
-    const color = catColors[a.cat] || '#aaa';
-    const rowClass = r ? `marked-${r}` : '';
-    return `<tr class="${rowClass}">
-      <td class="num">${a.id}</td>
-      <td class="name">${a.name}</td>
-      <td class="cat"><span style="border-color:${color}55;color:${color};background:${color}18;border:1px solid ${color}33">${a.cat}</span></td>
-      <td class="desc">${a.desc}</td>
-      <td class="fans">★ ${a.fans}</td>
-      <td class="link"><a href="${a.url}" target="_blank">📺 视频</a></td>
-      <td class="rating">
+  const filtered = currentFilter === 'all' ? accounts : accounts.filter(a => a.rating === currentFilter);
+  document.getElementById('tbody').innerHTML = filtered.map(a => `
+    <tr>
+      <td><strong>${a.name}</strong><br><small style="color:#555">${a.desc}</small></td>
+      <td><span class="badge">${a.category}</span></td>
+      <td>${a.fans}</td>
+      <td><span class="status-dot ${a.status === '账号已重置' ? 'status-bad' : 'status-ok'}"></span>${a.status}</td>
+      <td>
         <div class="rating-group">
-          <button class="rating-btn ${r==='yes'?'active-yes':''}" onclick="setRating(${a.id},'yes')">✅必关注</button>
-          <button class="rating-btn ${r==='meh'?'active-meh':''}" onclick="setRating(${a.id},'meh')">🟡还行</button>
-          <button class="rating-btn ${r==='no'?'active-no':''}" onclick="setRating(${a.id},'no')">❌跳过</button>
+          <button class="rate-btn ${a.rating === 'follow' ? 'active-follow' : ''}" onclick="doRate(${a.id},'follow')">✅</button>
+          <button class="rate-btn ${a.rating === 'ok' ? 'active-ok' : ''}" onclick="doRate(${a.id},'ok')">🟡</button>
+          <button class="rate-btn ${a.rating === 'skip' ? 'active-skip' : ''}" onclick="doRate(${a.id},'skip')">❌</button>
         </div>
       </td>
-    </tr>`;
-  }).join('');
-
-  // Update filter counts
-  const counts = { all: accounts.length, yes: 0, meh: 0, no: 0, none: 0 };
-  accounts.forEach(a => { if (ratings[String(a.id)]) counts[ratings[String(a.id)]]++; else counts.none++; });
-  const labels = { all:'全部', yes:'✅ 必关注', meh:'🟡 还行', no:'❌ 不感兴趣', none:'⭕ 待评价' };
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.textContent = labels[btn.dataset.filter] + ` (${counts[btn.dataset.filter]})`;
-  });
-  document.getElementById('stats').innerHTML = `已标记 <strong>${Object.keys(ratings).filter(k=>ratings[k]).length}</strong> / ${accounts.length}`;
+    </tr>
+  `).join('');
+  document.getElementById('status').textContent = `${filtered.length} / ${accounts.length} 个账号`;
 }
 
-async function clearAll() {
-  if (!confirm('确定清除所有评价？')) return;
-  ratings = {};
+async function doRate(id, val) {
   try {
-    await fetch('/api/ratings', { method: 'DELETE' });
-  } catch(e) {}
-  render();
-  toast('已清除所有评价');
+    await rate(id, val);
+    const acc = accounts.find(a => a.id === id);
+    acc.rating = acc.rating === val ? null : val;
+    render();
+    toast(val === 'follow' ? '✅ 已标记关注' : val === 'ok' ? '🟡 已标记观望' : '❌ 已标记跳过', 'ok');
+  } catch(e) { toast(e.message, 'err'); }
 }
 
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
     currentFilter = btn.dataset.filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
     render();
   });
 });
 
-async function init() {
-  try {
-    const [accRes, ratRes] = await Promise.all([
-      fetch('/api/accounts'),
-      fetch('/api/ratings')
-    ]);
-    accounts = await accRes.json();
-    ratings = await ratRes.json();
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('mainTable').style.display = '';
-    render();
-  } catch(e) {
-    document.getElementById('loading').innerHTML = '❌ 连接服务器失败，请确保服务器已启动';
-  }
-}
-
-init();
+fetchAccounts().then(data => {
+  accounts = data.accounts || data;
+  render();
+  if (data.source) console.log('数据来源:', data.source);
+}).catch(e => {
+  document.getElementById('status').textContent = '加载失败: ' + e.message;
+  toast('加载失败: ' + e.message, 'err');
+});
 </script>
 </body>
 </html>

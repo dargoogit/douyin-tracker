@@ -1,9 +1,4 @@
-import { Redis } from '@upstash/redis';
-
-const redis = process.env.UPSTASH_REDIS_REST_URL
-  ? new Redis({ url: process.env.UPSTASH_REDIS_REST_URL, token: process.env.UPSTASH_REDIS_REST_TOKEN })
-  : null;
-
+// 最小化版本：不依赖 Redis，直接返回硬编码数据
 const ACCOUNTS = [
   { id: 1, name: "追风少年", category: "搞笑/生活", desc: "搞笑段子手", fans: "100.0w", status: "账号已重置" },
   { id: 2, name: "梅尼耶", category: "美食/网红", desc: "鼓上舞创始人", fans: "2600w", status: "-" },
@@ -28,27 +23,42 @@ const ACCOUNTS = [
   { id: 21, name: "司氏砸缸", category: "知识/旅行", desc: "旅行探险", fans: "200.0w", status: "-" }
 ];
 
+// ratings 存在内存里（Vercel serverless 每次调用冷启动，不用 Redis）
+const ratings = {};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+  res.setHeader('Cache-Control', 'no-store');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
   const url = new URL(req.url, 'http://' + req.headers.host);
-  try {
-    if (req.method === 'GET' && url.pathname === '/api/accounts') {
-      let ratings = {};
-      if (redis) { try { ratings = await redis.hgetall('ratings') || {}; } catch(e) {} }
-      return res.status(200).json(ACCOUNTS.map(a => ({ ...a, rating: ratings[a.id] || null })));
-    }
-    if (req.method === 'POST' && url.pathname === '/api/rate') {
-      const { accountId, rating } = JSON.parse(req.body || '{}');
-      if (!accountId || !rating) return res.status(400).json({ error: '缺少参数' });
-      if (redis) { try { await redis.hset('ratings', { [accountId]: rating }); } catch(e) {} }
-      return res.status(200).json({ success: true, accountId, rating });
-    }
-    return res.status(404).json({ error: '未知端点' });
-  } catch(e) {
-    return res.status(500).json({ error: e.message });
+
+  if (req.method === 'GET' && url.pathname === '/api/accounts') {
+    return res.status(200).json({
+      source: 'serverless',
+      timestamp: new Date().toISOString(),
+      accounts: ACCOUNTS.map(a => ({ ...a, rating: ratings[a.id] || null }))
+    });
   }
+
+  if (req.method === 'POST' && url.pathname === '/api/rate') {
+    let body = {};
+    try {
+      if (req.body) body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    } catch(e) {}
+    const { accountId, rating } = body;
+    if (!accountId || !rating) {
+      return res.status(400).json({ error: '缺少参数 accountId 或 rating' });
+    }
+    ratings[accountId] = rating;
+    return res.status(200).json({ success: true, accountId, rating, note: '数据保存在内存（重启后会重置）' });
+  }
+
+  // 所有其他路径 → 静态文件由 Vercel 处理
+  return res.status(404).json({ error: '未知端点', path: url.pathname });
 }
