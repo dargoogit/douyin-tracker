@@ -2,6 +2,9 @@
   "name": "douyin-tracker",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "start": "node api/index.js"
+  },
   "dependencies": {
     "@upstash/redis": "^1.34.0"
   },
