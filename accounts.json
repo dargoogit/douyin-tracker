@@ -1,0 +1,27 @@
+{
+  "updated_at": "2026-04-29T16:49:00+08:00",
+  "updated_by": "小抖",
+  "accounts": [
+    {"id": "1",  "name": "追风少年",       "category": "搞笑/生活", "notes": "搞笑段子手",         "followers": "100.0w",   "last_active": "账号已重置"},
+    {"id": "2",  "name": "梅尼耶",          "category": "美食/网红", "notes": "鼓上舞创始人",       "followers": "2600w",    "last_active": "2024-04-27"},
+    {"id": "3",  "name": "毒角SHOW",        "category": "剧情/搞笑", "notes": "独特角先生",         "followers": "2500w",    "last_active": "2024-04-27"},
+    {"id": "4",  "name": "毒舌电影",         "category": "影视解说", "notes": "专业电影解说",       "followers": "6000w",    "last_active": "2024-04-27"},
+    {"id": "5",  "name": "藏不住的秘密",      "category": "剧情/情感", "notes": "悬疑反转剧情",       "followers": "1000w",    "last_active": "2024-04-27"},
+    {"id": "6",  "name": "小白剪辑",         "category": "技能/教程", "notes": "Pr/Ae剪辑教学",      "followers": "200.0w",   "last_active": "2024-04-27"},
+    {"id": "7",  "name": "科技呆",          "category": "科技/数码", "notes": "数码产品测评",       "followers": "200.0w",   "last_active": "2024-04-27"},
+    {"id": "8",  "name": "科技季",          "category": "科技/数码", "notes": "手机测评分析",       "followers": "100.0w",   "last_active": "2024-04-27"},
+    {"id": "9",  "name": "一何正经",         "category": "知识/职场", "notes": "职场干货分享",       "followers": "100.0w",   "last_active": "2024-04-27"},
+    {"id": "10", "name": "小lin出品",        "category": "财经/商业", "notes": "商业知识科普",       "followers": "500.0w",   "last_active": "2024-04-27"},
+    {"id": "11", "name": "冲浪普拉斯",        "category": "财经/商业", "notes": "商业深度纪录片",      "followers": "500.0w",   "last_active": "2024-04-27"},
+    {"id": "12", "name": "思维实验室",        "category": "知识/科普", "notes": "深度科普内容",       "followers": "500.0w",   "last_active": "2024-04-27"},
+    {"id": "13", "name": "三维地图集",        "category": "知识/地理", "notes": "全球旅行地理",       "followers": "500.0w",   "last_active": "2024-04-27"},
+    {"id": "14", "name": "蛋解创业",         "category": "财经/创业", "notes": "创业故事分享",       "followers": "100.0w",   "last_active": "2024-04-27"},
+    {"id": "15", "name": "硬核看板",         "category": "科技/商业", "notes": "商业科技解读",       "followers": "100.0w",   "last_active": "2024-04-27"},
+    {"id": "16", "name": "硬核的半佛仙人",     "category": "知识/吐槽", "notes": "神仙级吐槽",        "followers": "500.0w",   "last_active": "2024-04-27"},
+    {"id": "17", "name": "果壳",           "category": "知识/科普", "notes": "科普百科知识",       "followers": "1000w",    "last_active": "2024-04-27"},
+    {"id": "18", "name": "罗翔",           "category": "知识/法律", "notes": "法律知识普法",       "followers": "3000w",    "last_active": "2024-04-27"},
+    {"id": "19", "name": "狂丸食堂",         "category": "美食/生活", "notes": "黑暗料理测评",       "followers": "500.0w",   "last_active": "2024-04-27"},
+    {"id": "20", "name": "秀画神笔",         "category": "创意/绘画", "notes": "AI创意绘画",        "followers": "200.0w",   "last_active": "2024-04-27"},
+    {"id": "21", "name": "司氏砸缸",         "category": "知识/旅行", "notes": "旅行探险记录",       "followers": "200.0w",   "last_active": "2024-04-27"}
+  ]
+}

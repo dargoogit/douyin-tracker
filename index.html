@@ -1,24 +1,470 @@
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Test</title>
-<style>body{font-family:sans-serif;padding:2em;text-align:center}
-.ok{color:green;font-size:3em}</style></head>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#0f0f23">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="抖音清单">
+<title>抖音推荐关注清单</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f23;color:#e2e8f0;min-height:100vh;min-height:100dvh}
+#app{max-width:800px;margin:0 auto;padding:12px 12px 80px}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 12px;position:sticky;top:0;background:#0f0f23;z-index:10;border-bottom:1px solid #1e293b}
+h1{font-size:18px;font-weight:700;letter-spacing:-0.3px}
+.header-btns{display:flex;gap:8px}
+
+/* stats */
+.stats{display:flex;gap:8px;padding:16px 0;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.stat-chip{flex:1;min-width:80px;text-align:center;padding:10px 6px;border-radius:12px;background:#1e293b;border:2px solid transparent;transition:all 0.2s}
+.stat-chip .num{font-size:24px;font-weight:800;display:block;line-height:1.2}
+.stat-chip .lbl{font-size:11px;color:#94a3b8;margin-top:2px}
+.stat-chip.active-good{border-color:#22c55e;background:#052e16}
+.stat-chip.active-ok{border-color:#eab308;background:#422006}
+.stat-chip.active-skip{border-color:#ef4444;background:#2d0a0a}
+.stat-chip.active-good .num{color:#4ade80}
+.stat-chip.active-ok .num{color:#facc15}
+.stat-chip.active-skip .num{color:#f87171}
+
+/* sync bar */
+.sync-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 0;font-size:12px;color:#94a3b8}
+.sync-status{display:flex;align-items:center;gap:4px}
+.sync-dot{width:6px;height:6px;border-radius:50%}
+.sync-dot.ok{background:#22c55e}
+.sync-dot.syncing{background:#eab308;animation:pulse 0.8s infinite}
+.sync-dot.error{background:#ef4444}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+.sync-actions{display:flex;gap:12px}
+
+/* account cards */
+.acct-list{display:flex;flex-direction:column;gap:10px}
+.acct-card{background:#1a1a3e;border-radius:14px;padding:14px;border:1px solid #2d2d5e;transition:border-color 0.2s}
+.acct-card.rated-good{border-color:#22c55e55}
+.acct-card.rated-ok{border-color:#eab30855}
+.acct-card.rated-skip{border-color:#ef444455}
+.acct-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.acct-name{font-size:16px;font-weight:700}
+.acct-followers{font-size:12px;color:#94a3b8;white-space:nowrap}
+.acct-meta{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tag{padding:2px 8px;border-radius:6px;font-size:11px;background:#2d2d5e;color:#a5b4fc}
+.tag-notes{background:#312e81;color:#c4b5fd}
+.rating-row{display:flex;gap:6px}
+.rate-btn{flex:1;padding:8px 4px;border-radius:10px;border:1.5px solid #3b3b6e;background:transparent;color:#94a3b8;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;text-align:center}
+.rate-btn:active{transform:scale(0.96)}
+.rate-btn.selected-good{background:#22c55e22;border-color:#22c55e;color:#4ade80}
+.rate-btn.selected-ok{background:#eab30822;border-color:#eab308;color:#facc15}
+.rate-btn.selected-skip{background:#ef444422;border-color:#ef4444;color:#f87171}
+.rate-btn.btn-clear{flex:0 0 auto;padding:8px 10px;font-size:14px}
+
+/* buttons */
+.btn{padding:6px 14px;border-radius:8px;border:1px solid #3b3b6e;background:#1e293b;color:#e2e8f0;font-size:13px;cursor:pointer;font-weight:600;-webkit-tap-highlight-color:transparent}
+.btn:active{background:#334155}
+.btn-primary{background:#6366f1;border-color:#6366f1}
+.btn-primary:active{background:#4f46e5}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-icon{padding:6px 8px;font-size:14px;line-height:1}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:#00000099;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#1a1a3e;border-radius:16px;padding:24px;width:100%;max-width:380px;border:1px solid #2d2d5e}
+.modal h2{font-size:17px;margin-bottom:16px}
+.modal label{display:block;font-size:13px;color:#94a3b8;margin-bottom:6px}
+.modal input{width:100%;padding:10px 14px;border-radius:10px;border:1px solid #3b3b6e;background:#0f0f23;color:#e2e8f0;font-size:14px;font-family:monospace}
+.modal input:focus{outline:none;border-color:#6366f1}
+.modal .hint{font-size:11px;color:#64748b;margin-top:6px}
+.modal-actions{display:flex;gap:8px;margin-top:20px}
+.modal-actions .btn{flex:1}
+
+/* toast */
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#334155;color:#e2e8f0;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;animation:toastIn 0.3s ease;pointer-events:none}
+.toast.error{background:#7f1d1d;color:#fca5a5}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* empty */
+.empty{padding:40px 20px;text-align:center;color:#64748b;font-size:14px}
+
+/* hidden */
+.hidden{display:none!important}
+
+/* badge */
+.badge{display:inline-flex;align-items:center;gap:2px;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700}
+.badge-update{background:#6366f122;color:#818cf8}
+
+/* footer */
+footer{text-align:center;padding:20px 0 12px;font-size:11px;color:#475569}
+</style>
+</head>
 <body>
-<h1>✅ Vercel 静态页面 — 通了</h1>
-<p>如果看到这个说明静态资源服务正常</p>
-<hr>
-<button onclick="testAPI()">测试 /api/ping</button>
-<pre id="result"></pre>
+<div id="app">
+<header>
+  <div>
+    <h1>📋 抖音关注清单</h1>
+    <span id="updateBadge" class="badge badge-update hidden"></span>
+  </div>
+  <div class="header-btns">
+    <button class="btn btn-sm" onclick="openSettings()" title="设置">⚙️</button>
+  </div>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="sync-bar">
+  <span class="sync-status">
+    <span class="sync-dot ok" id="syncDot"></span>
+    <span id="syncLabel">已同步</span>
+  </span>
+  <span class="sync-actions">
+    <a href="#" onclick="syncPull()" style="color:#818cf8;font-size:12px;text-decoration:none">拉取</a>
+    <a href="#" onclick="syncPush()" style="color:#818cf8;font-size:12px;text-decoration:none">推送</a>
+  </span>
+</div>
+
+<div class="acct-list" id="acctList">
+  <div class="empty">加载中...</div>
+</div>
+
+<footer>小抖 · 抖音推荐关注清单</footer>
+</div>
+
+<!-- Settings Modal -->
+<div id="settingsModal" class="modal-overlay hidden">
+<div class="modal">
+  <h2>⚙️ 设置</h2>
+  <label>GitHub Token (PAT)</label>
+  <input type="password" id="patInput" placeholder="ghp_xxxxxxxxxxxx">
+  <div class="hint">需 repo 权限，Token 仅存在本设备</div>
+  <label style="margin-top:14px">仓库</label>
+  <input type="text" id="repoInput" value="dargoogit/douyin-tracker" style="font-family:inherit">
+  <div class="modal-actions">
+    <button class="btn" onclick="closeSettings()">取消</button>
+    <button class="btn btn-primary" onclick="saveSettings()">保存</button>
+  </div>
+</div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
 <script>
-async function testAPI(){
-  const el=document.getElementById("result");
-  el.textContent="请求中...";
+// ====== HARDCODED FALLBACK ACCOUNTS ======
+const FALLBACK_ACCOUNTS = [
+  {id:"1",name:"追风少年",category:"搞笑/生活",notes:"搞笑段子手",followers:"100.0w",last_active:"账号已重置"},
+  {id:"2",name:"梅尼耶",category:"美食/网红",notes:"鼓上舞创始人",followers:"2600w",last_active:"2024-04-27"},
+  {id:"3",name:"毒角SHOW",category:"剧情/搞笑",notes:"独特角先生",followers:"2500w",last_active:"2024-04-27"},
+  {id:"4",name:"毒舌电影",category:"影视解说",notes:"专业电影解说",followers:"6000w",last_active:"2024-04-27"},
+  {id:"5",name:"藏不住的秘密",category:"剧情/情感",notes:"悬疑反转剧情",followers:"1000w",last_active:"2024-04-27"},
+  {id:"6",name:"小白剪辑",category:"技能/教程",notes:"Pr/Ae剪辑教学",followers:"200.0w",last_active:"2024-04-27"},
+  {id:"7",name:"科技呆",category:"科技/数码",notes:"数码产品测评",followers:"200.0w",last_active:"2024-04-27"},
+  {id:"8",name:"科技季",category:"科技/数码",notes:"手机测评分析",followers:"100.0w",last_active:"2024-04-27"},
+  {id:"9",name:"一何正经",category:"知识/职场",notes:"职场干货分享",followers:"100.0w",last_active:"2024-04-27"},
+  {id:"10",name:"小lin出品",category:"财经/商业",notes:"商业知识科普",followers:"500.0w",last_active:"2024-04-27"},
+  {id:"11",name:"冲浪普拉斯",category:"财经/商业",notes:"商业深度纪录片",followers:"500.0w",last_active:"2024-04-27"},
+  {id:"12",name:"思维实验室",category:"知识/科普",notes:"深度科普内容",followers:"500.0w",last_active:"2024-04-27"},
+  {id:"13",name:"三维地图集",category:"知识/地理",notes:"全球旅行地理",followers:"500.0w",last_active:"2024-04-27"},
+  {id:"14",name:"蛋解创业",category:"财经/创业",notes:"创业故事分享",followers:"100.0w",last_active:"2024-04-27"},
+  {id:"15",name:"硬核看板",category:"科技/商业",notes:"商业科技解读",followers:"100.0w",last_active:"2024-04-27"},
+  {id:"16",name:"硬核的半佛仙人",category:"知识/吐槽",notes:"神仙级吐槽",followers:"500.0w",last_active:"2024-04-27"},
+  {id:"17",name:"果壳",category:"知识/科普",notes:"科普百科知识",followers:"1000w",last_active:"2024-04-27"},
+  {id:"18",name:"罗翔",category:"知识/法律",notes:"法律知识普法",followers:"3000w",last_active:"2024-04-27"},
+  {id:"19",name:"狂丸食堂",category:"美食/生活",notes:"黑暗料理测评",followers:"500.0w",last_active:"2024-04-27"},
+  {id:"20",name:"秀画神笔",category:"创意/绘画",notes:"AI创意绘画",followers:"200.0w",last_active:"2024-04-27"},
+  {id:"21",name:"司氏砸缸",category:"知识/旅行",notes:"旅行探险记录",followers:"200.0w",last_active:"2024-04-27"}
+];
+
+// ====== STATE ======
+let state = {
+  accounts: [],
+  ratings: {},
+  pat: '',
+  repo: 'dargoogit/douyin-tracker',
+  sync: 'ok', // ok|unsaved|syncing|error
+  accountUpdated: null,
+  dirty: false
+};
+
+// ====== INIT ======
+function init(){
+  state.pat = localStorage.getItem('dt_pat')||'';
+  state.repo = localStorage.getItem('dt_repo')||'dargoogit/douyin-tracker';
+  if(!state.pat){ openSettings(); }
+
+  // load local ratings first (instant)
   try{
-    const r=await fetch("/api/ping");
-    const d=await r.json();
-    el.textContent=JSON.stringify(d,null,2);
+    const local = localStorage.getItem('dt_ratings');
+    if(local) state.ratings = JSON.parse(local);
+  }catch(e){}
+
+  // start with fallback accounts, then try GitHub
+  state.accounts = FALLBACK_ACCOUNTS;
+  render();
+
+  // try loading from GitHub
+  loadFromGitHub();
+}
+
+async function loadFromGitHub(){
+  if(!state.pat) return;
+
+  // fetch accounts.json
+  try{
+    const acc = await ghGet('accounts.json');
+    if(acc && acc.accounts && acc.accounts.length){
+      state.accounts = acc.accounts;
+      state.accountUpdated = acc.updated_at;
+    }
+  }catch(e){ /* use fallback */ }
+
+  // fetch ratings.json
+  try{
+    const rat = await ghGet('ratings.json');
+    if(rat && rat.ratings){
+      // merge: remote wins for keys not in local, local wins for conflict
+      for(const[id,v] of Object.entries(rat.ratings)){
+        if(!state.ratings[id]) state.ratings[id]=v;
+      }
+      saveLocal();
+    }
+  }catch(e){ /* use local */ }
+
+  render();
+}
+
+async function ghGet(file){
+  const res = await fetch(`https://api.github.com/repos/${state.repo}/contents/${file}`,{
+    headers:{Authorization:`Bearer ${state.pat}`,Accept:'application/vnd.github.v3+json'}
+  });
+  if(!res.ok) throw new Error(res.status);
+  const data = await res.json();
+  return JSON.parse(atob(data.content));
+}
+
+async function ghPut(file,content,sha){
+  const body = JSON.stringify({
+    message:`sync: ${file}`,
+    content:btoa(unescape(encodeURIComponent(JSON.stringify(content,null,2)))),
+    sha
+  });
+  const res = await fetch(`https://api.github.com/repos/${state.repo}/contents/${file}`,{
+    method:'PUT',
+    headers:{Authorization:`Bearer ${state.pat}`,Accept:'application/vnd.github.v3+json','Content-Type':'application/json'},
+    body
+  });
+  if(!res.ok) throw new Error(res.status);
+  return await res.json();
+}
+
+async function ghGetSha(file){
+  const res = await fetch(`https://api.github.com/repos/${state.repo}/contents/${file}`,{
+    headers:{Authorization:`Bearer ${state.pat}`,Accept:'application/vnd.github.v3+json'}
+  });
+  if(!res.ok) throw new Error(res.status);
+  const data = await res.json();
+  return data.sha;
+}
+
+// ====== RATING ======
+function rate(id,val){
+  if(val) state.ratings[id]=val;
+  else delete state.ratings[id];
+  state.dirty = true;
+  saveLocal();
+  render();
+  autoPush();
+}
+
+// ====== SYNC ======
+let pushTimer=null;
+function autoPush(){
+  if(pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(syncPush, 2000);
+}
+
+async function syncPush(){
+  if(!state.pat){ toast('请先设置 Token','error'); return; }
+  if(!state.dirty){ toast('无变更需推送'); return; }
+  setSync('syncing');
+  try{
+    const sha = await ghGetSha('ratings.json');
+    const payload = {
+      updated_at: new Date().toISOString(),
+      ratings: state.ratings
+    };
+    await ghPut('ratings.json',payload,sha);
+    state.dirty = false;
+    setSync('ok');
+    toast('已同步 ✅');
   }catch(e){
-    el.textContent="❌ 请求失败: "+e.message;
+    setSync('error');
+    toast('同步失败: '+e.message,'error');
   }
 }
+
+async function syncPull(){
+  if(!state.pat){ toast('请先设置 Token','error'); return; }
+  setSync('syncing');
+  try{
+    const acc = await ghGet('accounts.json');
+    if(acc && acc.accounts && acc.accounts.length){
+      state.accounts = acc.accounts;
+      state.accountUpdated = acc.updated_at;
+    }
+    const rat = await ghGet('ratings.json');
+    if(rat && rat.ratings){
+      for(const[id,v] of Object.entries(rat.ratings)){
+        state.ratings[id] = v;
+      }
+      saveLocal();
+    }
+    state.dirty = false;
+    setSync('ok');
+    render();
+    toast('已拉取 ✅');
+  }catch(e){
+    setSync('error');
+    toast('拉取失败: '+e.message,'error');
+  }
+}
+
+// ====== RENDER ======
+function render(){
+  // stats
+  const counts = {good:0,ok:0,skip:0,total:state.accounts.length};
+  state.accounts.forEach(a=>{
+    const v = state.ratings[a.id];
+    if(v==='good') counts.good++;
+    else if(v==='ok') counts.ok++;
+    else if(v==='skip') counts.skip++;
+  });
+
+  document.getElementById('stats').innerHTML = `
+    <div class="stat-chip ${counts.good>0?'active-good':''}">
+      <span class="num">${counts.good}</span><span class="lbl">✅ 必关注</span>
+    </div>
+    <div class="stat-chip ${counts.ok>0?'active-ok':''}">
+      <span class="num">${counts.ok}</span><span class="lbl">🟡 还行</span>
+    </div>
+    <div class="stat-chip ${counts.skip>0?'active-skip':''}">
+      <span class="num">${counts.skip}</span><span class="lbl">❌ 跳过</span>
+    </div>
+    <div class="stat-chip">
+      <span class="num">${counts.total-counts.good-counts.ok-counts.skip}</span><span class="lbl">待评价</span>
+    </div>
+  `;
+
+  // account cards
+  const list = document.getElementById('acctList');
+  if(!state.accounts.length){
+    list.innerHTML = '<div class="empty">暂无账号</div>';
+    return;
+  }
+
+  list.innerHTML = state.accounts.map(a=>{
+    const r = state.ratings[a.id]||'';
+    const ratedCls = r?`rated-${r}`:'';
+    return `
+    <div class="acct-card ${ratedCls}">
+      <div class="acct-top">
+        <span class="acct-name">${esc(a.name)}</span>
+        <span class="acct-followers">${esc(a.followers||'')} 粉丝</span>
+      </div>
+      <div class="acct-meta">
+        <span class="tag">${esc(a.category||'')}</span>
+        ${a.notes?`<span class="tag tag-notes">${esc(a.notes)}</span>`:''}
+      </div>
+      <div class="rating-row">
+        <button class="rate-btn ${r==='good'?'selected-good':''}" onclick="rate('${a.id}','good')">✅ 必关注</button>
+        <button class="rate-btn ${r==='ok'?'selected-ok':''}" onclick="rate('${a.id}','ok')">🟡 还行</button>
+        <button class="rate-btn ${r==='skip'?'selected-skip':''}" onclick="rate('${a.id}','skip')">❌ 跳过</button>
+        ${r?`<button class="rate-btn btn-clear" onclick="rate('${a.id}','')">✕</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // badge
+  const badge = document.getElementById('updateBadge');
+  if(state.accountUpdated){
+    badge.textContent = '更新 '+new Date(state.accountUpdated).toLocaleDateString('zh-CN');
+    badge.classList.remove('hidden');
+  }else{
+    badge.classList.add('hidden');
+  }
+}
+
+function setSync(s){
+  state.sync = s;
+  const dot = document.getElementById('syncDot');
+  const lbl = document.getElementById('syncLabel');
+  dot.className = 'sync-dot '+s;
+  lbl.textContent = {ok:'已同步',unsaved:'未保存',syncing:'同步中...',error:'同步失败'}[s]||s;
+}
+
+function saveLocal(){
+  localStorage.setItem('dt_ratings',JSON.stringify(state.ratings));
+  if(state.dirty) setSync('unsaved');
+}
+
+// ====== MODAL ======
+function openSettings(){
+  document.getElementById('patInput').value = state.pat;
+  document.getElementById('repoInput').value = state.repo;
+  document.getElementById('settingsModal').classList.remove('hidden');
+}
+
+function closeSettings(){
+  document.getElementById('settingsModal').classList.add('hidden');
+}
+
+function saveSettings(){
+  state.pat = document.getElementById('patInput').value.trim();
+  state.repo = document.getElementById('repoInput').value.trim();
+  if(state.pat) localStorage.setItem('dt_pat',state.pat);
+  else localStorage.removeItem('dt_pat');
+  localStorage.setItem('dt_repo',state.repo);
+  closeSettings();
+  toast('设置已保存');
+  loadFromGitHub();
+}
+
+// ====== TOAST ======
+let toastTimer;
+function toast(msg,type=''){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast'+(type?' '+type:'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>el.classList.add('hidden'),2500);
+}
+
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ====== PWA ======
+// inline manifest
+const blob = new Blob([JSON.stringify({
+  name:'抖音推荐关注清单',
+  short_name:'抖音清单',
+  start_url:'.',
+  display:'standalone',
+  background_color:'#0f0f23',
+  theme_color:'#0f0f23',
+  icons:[{src:'data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="#6366f1" width="100" height="100" rx="20"/><text x="50" y="65" text-anchor="middle" fill="white" font-size="45" font-weight="bold">📋</text></svg>'),sizes:'100x100',type:'image/svg+xml'}]
+})],{type:'application/json'});
+const manifestUrl = URL.createObjectURL(blob);
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestUrl;
+document.head.appendChild(link);
+
+// service worker
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ====== START ======
+init();
 </script>
-</body></html>
+</body>
+</html>
