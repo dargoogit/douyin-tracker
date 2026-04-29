@@ -1,135 +1,24 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>抖音推荐关注清单</title>
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #121212; color: #e0e0e0; min-height: 100vh; }
-header { background: #1a1a2e; padding: 24px; text-align: center; border-bottom: 1px solid #333; }
-header h1 { font-size: 1.5rem; color: #fff; }
-header p { font-size: 0.85rem; color: #888; margin-top: 6px; }
-.filter-bar { display: flex; gap: 8px; padding: 16px 24px; flex-wrap: wrap; align-items: center; background: #1a1a2e; border-bottom: 1px solid #2a2a3a; }
-.filter-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid #444; background: transparent; color: #aaa; cursor: pointer; font-size: 0.85rem; transition: all 0.2s; }
-.filter-btn:hover, .filter-btn.active { background: #ff4757; border-color: #ff4757; color: #fff; }
-.container { max-width: 900px; margin: 0 auto; padding: 16px 24px; }
-table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 10px 12px; font-size: 0.75rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #2a2a3a; }
-td { padding: 12px; border-bottom: 1px solid #1e1e2e; vertical-align: middle; }
-tr:hover td { background: #1a1a2e; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; background: #2a2a3a; color: #888; }
-.rating-group { display: flex; gap: 4px; }
-.rate-btn { padding: 5px 10px; border: 1px solid #333; border-radius: 6px; background: transparent; color: #888; cursor: pointer; font-size: 0.75rem; transition: all 0.15s; }
-.rate-btn:hover { border-color: #666; color: #ccc; transform: scale(1.05); }
-.rate-btn.active-follow { background: #2ed573; border-color: #2ed573; color: #fff; }
-.rate-btn.active-ok { background: #ffa502; border-color: #ffa502; color: #fff; }
-.rate-btn.active-skip { background: #ff4757; border-color: #ff4757; color: #fff; }
-.status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 6px; }
-.status-ok { background: #2ed573; }
-.status-bad { background: #ff4757; }
-.status-unknown { background: #555; }
-#toast { position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px; font-size: 0.9rem; opacity: 0; transform: translateY(10px); transition: all 0.3s; pointer-events: none; z-index: 999; }
-#toast.show { opacity: 1; transform: translateY(0); }
-#toast.ok { background: #2ed573; color: #fff; }
-#toast.err { background: #ff4757; color: #fff; }
-#status { font-size: 0.8rem; color: #555; padding: 8px 24px; }
-</style>
-</head>
+<html><head><meta charset="utf-8"><title>Test</title>
+<style>body{font-family:sans-serif;padding:2em;text-align:center}
+.ok{color:green;font-size:3em}</style></head>
 <body>
-<header>
-  <h1>🎵 抖音推荐关注清单</h1>
-  <p>追踪 21 个优质博主 · 3级评价</p>
-</header>
-<div class="filter-bar">
-  <button class="filter-btn active" data-filter="all">全部</button>
-  <button class="filter-btn" data-filter="follow">✅ 关注</button>
-  <button class="filter-btn" data-filter="ok">🟡 观望</button>
-  <button class="filter-btn" data-filter="skip">❌ 跳过</button>
-  <button class="filter-btn" data-filter="none">⭕ 待定</button>
-</div>
-<div id="status">加载中...</div>
-<div class="container">
-  <table>
-    <thead><tr><th>账号</th><th>类别</th><th>粉丝</th><th>状态</th><th>评价</th></tr></thead>
-    <tbody id="tbody"></tbody>
-  </table>
-</div>
-<div id="toast"></div>
+<h1>✅ Vercel 静态页面 — 通了</h1>
+<p>如果看到这个说明静态资源服务正常</p>
+<hr>
+<button onclick="testAPI()">测试 /api/ping</button>
+<pre id="result"></pre>
 <script>
-const API = ''; // 相对路径，同域
-
-async function fetchAccounts() {
-  const r = await fetch(API + '/api/accounts');
-  if (!r.ok) throw new Error('API错误 ' + r.status);
-  return r.json();
+async function testAPI(){
+  const el=document.getElementById("result");
+  el.textContent="请求中...";
+  try{
+    const r=await fetch("/api/ping");
+    const d=await r.json();
+    el.textContent=JSON.stringify(d,null,2);
+  }catch(e){
+    el.textContent="❌ 请求失败: "+e.message;
+  }
 }
-
-async function rate(id, value) {
-  const r = await fetch(API + '/api/rate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ accountId: id, rating: value })
-  });
-  if (!r.ok) throw new Error('提交失败');
-  return r.json();
-}
-
-function toast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = 'show ' + type;
-  setTimeout(() => t.className = '', 2500);
-}
-
-let accounts = [];
-let currentFilter = 'all';
-
-function render() {
-  const filtered = currentFilter === 'all' ? accounts : accounts.filter(a => a.rating === currentFilter);
-  document.getElementById('tbody').innerHTML = filtered.map(a => `
-    <tr>
-      <td><strong>${a.name}</strong><br><small style="color:#555">${a.desc}</small></td>
-      <td><span class="badge">${a.category}</span></td>
-      <td>${a.fans}</td>
-      <td><span class="status-dot ${a.status === '账号已重置' ? 'status-bad' : 'status-ok'}"></span>${a.status}</td>
-      <td>
-        <div class="rating-group">
-          <button class="rate-btn ${a.rating === 'follow' ? 'active-follow' : ''}" onclick="doRate(${a.id},'follow')">✅</button>
-          <button class="rate-btn ${a.rating === 'ok' ? 'active-ok' : ''}" onclick="doRate(${a.id},'ok')">🟡</button>
-          <button class="rate-btn ${a.rating === 'skip' ? 'active-skip' : ''}" onclick="doRate(${a.id},'skip')">❌</button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
-  document.getElementById('status').textContent = `${filtered.length} / ${accounts.length} 个账号`;
-}
-
-async function doRate(id, val) {
-  try {
-    await rate(id, val);
-    const acc = accounts.find(a => a.id === id);
-    acc.rating = acc.rating === val ? null : val;
-    render();
-    toast(val === 'follow' ? '✅ 已标记关注' : val === 'ok' ? '🟡 已标记观望' : '❌ 已标记跳过', 'ok');
-  } catch(e) { toast(e.message, 'err'); }
-}
-
-document.querySelectorAll('.filter-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    currentFilter = btn.dataset.filter;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b === btn));
-    render();
-  });
-});
-
-fetchAccounts().then(data => {
-  accounts = data.accounts || data;
-  render();
-  if (data.source) console.log('数据来源:', data.source);
-}).catch(e => {
-  document.getElementById('status').textContent = '加载失败: ' + e.message;
-  toast('加载失败: ' + e.message, 'err');
-});
 </script>
-</body>
-</html>
+</body></html>

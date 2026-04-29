@@ -2,12 +2,8 @@
   "framework": null,
   "rewrites": [
     {
-      "source": "/api/accounts",
-      "destination": "/api/index"
-    },
-    {
-      "source": "/api/rate",
-      "destination": "/api/index"
+      "source": "/api/ping",
+      "destination": "/api/ping"
     }
   ]
 }
